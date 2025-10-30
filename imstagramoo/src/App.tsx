@@ -1,15 +1,9 @@
 import { Route, Routes } from "react-router";
 import "./App.css";
-import Indexpage from "./pages/indexPage";
+import RootRoute from "@/root-route";
 
 function App() {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Indexpage />} />
-      </Routes>
-    </>
-  );
+  return <RootRoute />;
 }
 
 export default App;
