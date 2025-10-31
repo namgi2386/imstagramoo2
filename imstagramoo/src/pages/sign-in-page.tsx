@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSignUp } from "@/hooks/mutations/use-sign-up";
 import { useState } from "react";
 import { Link } from "react-router";
 
@@ -7,9 +8,15 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const { mutate: signUp } = useSignUp();
+
   const handleSignupClick = () => {
     if (email.trim() === "") return;
     if (password.trim() === "") return;
+    signUp({
+      email,
+      password,
+    });
   };
   return (
     <div className="flex flex-col gap-8">
