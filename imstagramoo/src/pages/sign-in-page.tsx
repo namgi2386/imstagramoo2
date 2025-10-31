@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useSignInWithPassword } from "@/hooks/mutations/use-sign-in";
 import { useState } from "react";
 import { Link } from "react-router";
+import gitHubLogo from "@/assets/github-mark.png";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -38,9 +39,14 @@ export default function SignInPage() {
           placeholder="password"
         />
       </div>
-      <div>
+      <div className="flex flex-col gap-2">
         <Button onClick={handleSignInWithPasswordClick} className="w-full">
           로그인
+        </Button>
+
+        <Button variant={"outline"} className="w-full">
+          <img src={gitHubLogo} className="h-4 w-4" />
+          Github 로그인
         </Button>
       </div>
       <div>
