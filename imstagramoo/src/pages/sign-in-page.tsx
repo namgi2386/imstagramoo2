@@ -4,12 +4,16 @@ import { useSignInWithPassword } from "@/hooks/mutations/use-sign-in";
 import { useState } from "react";
 import { Link } from "react-router";
 import gitHubLogo from "@/assets/github-mark.png";
+import googoleLogo from "@/assets/google-mark.png";
+import { useSignInWithOAuth } from "@/hooks/mutations/use-sign-in-with-oauth";
+import type { Provider } from "@supabase/supabase-js";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const { mutate: signInWithpassword } = useSignInWithPassword();
+  const { mutate: signInWithOAuth } = useSignInWithOAuth();
 
   const handleSignInWithPasswordClick = () => {
     if (email.trim()) return;
@@ -18,6 +22,9 @@ export default function SignInPage() {
       email,
       password,
     });
+  };
+  const handleSignInWithOAuthClick = (socialType: Provider) => {
+    signInWithOAuth(socialType);
   };
 
   return (
@@ -44,9 +51,21 @@ export default function SignInPage() {
           로그인
         </Button>
 
-        <Button variant={"outline"} className="w-full">
+        <Button
+          variant={"outline"}
+          onClick={() => handleSignInWithOAuthClick("github")}
+          className="w-full"
+        >
           <img src={gitHubLogo} className="h-4 w-4" />
           Github 로그인
+        </Button>
+        <Button
+          variant={"outline"}
+          onClick={() => handleSignInWithOAuthClick("google")}
+          className="w-full"
+        >
+          <img src={googoleLogo} className="h-4 w-4" />
+          Google 로그인
         </Button>
       </div>
       <div>
