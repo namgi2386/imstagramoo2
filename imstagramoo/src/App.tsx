@@ -1,9 +1,13 @@
-import { Route, Routes } from "react-router";
+import SessionProvider from "@/provider/session-provider";
 import "./App.css";
 import RootRoute from "@/root-route";
 
 function App() {
-  return <RootRoute />;
+  return (
+    <SessionProvider>
+      <RootRoute />
+    </SessionProvider>
+  );
 }
 
 export default App;
