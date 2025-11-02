@@ -17,7 +17,7 @@ export default function RootRoute() {
         <Route element={<GuestOnlyLayout />}>
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/forgot-password" element={<ForgetPasswordPage />} />
+          <Route path="/forget-password" element={<ForgetPasswordPage />} />
         </Route>
         <Route element={<MemberOnlyLayout />}>
           <Route path="/" element={<IndexPage />} />
