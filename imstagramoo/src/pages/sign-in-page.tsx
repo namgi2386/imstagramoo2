@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSignInWithPassword } from "@/hooks/mutations/use-sign-in";
+import { useSignInWithPassword } from "@/hooks/mutations/auth/use-sign-in";
 import { useState } from "react";
 import { Link } from "react-router";
 import gitHubLogo from "@/assets/github-mark.png";
 import googoleLogo from "@/assets/google-mark.png";
-import { useSignInWithOAuth } from "@/hooks/mutations/use-sign-in-with-oauth";
+import { useSignInWithOAuth } from "@/hooks/mutations/auth/use-sign-in-with-oauth";
 import type { Provider } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { generateErrorMessage } from "@/lib/error";
