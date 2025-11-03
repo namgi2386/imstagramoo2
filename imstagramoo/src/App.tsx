@@ -1,11 +1,14 @@
 import SessionProvider from "@/provider/session-provider";
 import "./App.css";
 import RootRoute from "@/root-route";
+import ModalProvider from "@/provider/modal-provider";
 
 function App() {
   return (
     <SessionProvider>
-      <RootRoute />
+      <ModalProvider>
+        <RootRoute />
+      </ModalProvider>
     </SessionProvider>
   );
 }
