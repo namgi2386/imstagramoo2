@@ -34,8 +34,34 @@ export default function PostEditorModal() {
   });
   const [content, setContent] = useState("");
   const [images, setImages] = useState<Image[]>([]);
+  const imagesRef = useRef(images);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
+    }
+  }, [content]);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      imagesRef.current.forEach((image) => {
+        URL.revokeObjectURL(image.previewUrl);
+      });
+      setImages([]);
+      setContent("");
+    } else {
+      textareaRef.current?.focus();
+    }
+  }, [isOpen]);
+
   const handleCloseModal = () => {
     if (content !== "" || images.length !== 0) {
       openAlertModal({
@@ -74,21 +100,8 @@ export default function PostEditorModal() {
     setImages((prev) =>
       prev.filter((item) => item.previewUrl !== image.previewUrl),
     );
+    URL.revokeObjectURL(image.previewUrl);
   };
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
-    }
-  }, [content]);
-  useEffect(() => {
-    if (!isOpen) return;
-    textareaRef.current?.focus();
-    setContent("");
-    setImages([]);
-  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCloseModal}>
