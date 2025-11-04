@@ -7,6 +7,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useCreatePost } from "@/hooks/mutations/post/use-create-post";
 import { usePostEditorModal } from "@/store/post-editor-modal";
+import { useSession } from "@/store/session";
 import { ImageIcon, XIcon } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ type Image = {
 };
 
 export default function PostEditorModal() {
+  const session = useSession();
   const { isOpen, close } = usePostEditorModal();
   const { mutate: createPost, isPending: isCreatePostPending } = useCreatePost({
     onSuccess: () => {
@@ -37,7 +39,11 @@ export default function PostEditorModal() {
   };
   const handleCreatePostClick = () => {
     if (content.trim() === "") return;
-    createPost(content);
+    createPost({
+      content,
+      images: images.map((image) => image.file),
+      userId: session!.user.id,
+    });
   };
   const handleSeclectImages = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
