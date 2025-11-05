@@ -2,11 +2,18 @@ import { uploadImage } from "@/api/image";
 import supabase from "@/lib/supabase";
 import type { PostEntity } from "@/types";
 
-export async function fetchPosts() {
-  const { data, error } = await supabase
+export async function fetchPosts({
+  from,
+  to,
+}: { from?: number; to?: number } = {}) {
+  let query = supabase
     .from("post")
     .select("*, author: profile!author_id (*)")
     .order("created_at", { ascending: false });
+  if (from !== undefined && to !== undefined) {
+    query = query.range(from, to);
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 }
