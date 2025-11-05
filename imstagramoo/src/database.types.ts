@@ -39,7 +39,15 @@ export type Database = {
           "image-urls"?: string[] | null
           "like-count"?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "post_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile: {
         Row: {
