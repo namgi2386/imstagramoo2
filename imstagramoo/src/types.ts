@@ -4,7 +4,7 @@ export type PostEntity = Database["public"]["Tables"]["post"]["Row"];
 
 export type ProfileEntitiy = Database["public"]["Tables"]["profile"]["Row"];
 
-export type Post = PostEntity & { author: ProfileEntitiy };
+export type Post = PostEntity & { author: ProfileEntitiy; isLiked: boolean };
 
 export type UseMutationCallback = {
   onSuccess?: () => void;
