@@ -107,7 +107,7 @@ export default function PostEditorModal() {
       });
     }
   };
-  const handleSeclectImages = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleSelectImages = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       files.forEach((file) => {
@@ -141,7 +141,7 @@ export default function PostEditorModal() {
           placeholder="무슨 일이 있었나요?"
         />
         <input
-          onChange={handleSeclectImages}
+          onChange={handleSelectImages}
           ref={fileInputRef}
           type="file"
           accept="image/*"

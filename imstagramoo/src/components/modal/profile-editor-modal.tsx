@@ -9,6 +9,11 @@ import { useSession } from "@/store/session";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import defaultAvatar from "@/assets/default-profile.png";
 import { Input } from "@/components/ui/input";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useUpdateProfile } from "@/hooks/mutations/profile/use-update-profile";
+import { toast } from "sonner";
+
+type Image = { file: File; previewUrl: string };
 
 export default function ProfileEditorModal() {
   const session = useSession();
@@ -19,13 +24,49 @@ export default function ProfileEditorModal() {
   } = useProfileData(session?.user.id);
   const profileEditorModal = useProfileEditorModal();
   const openAlertModal = useOpenAlertModal();
-  // useState 초기값은 session 정보로
-  // session정보 없으면? 어느 타이밍에 return 할건데?
-  // useEffect로 처리하는건가
-  const handleCloseModal = () => {};
-  const handlesaveButton = () => {
+  const { mutate: updateProfile, isPending: isUpdateProfilePending } =
+    useUpdateProfile({
+      onSuccess: () => {
+        profileEditorModal.actions.close();
+      },
+      onError: (error) => {
+        toast.error("프로필 수정에 실패했습니다.", {
+          position: "top-center",
+        });
+      },
+    });
+  const [avatarImage, setAvatarImage] = useState<Image | null>(null);
+  const [nickname, setNickname] = useState("");
+  const [bio, setBio] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!profileEditorModal.isOpen) {
+      if (avatarImage) URL.revokeObjectURL(avatarImage.previewUrl);
+    }
+  }, [profileEditorModal.isOpen]);
+
+  useEffect(() => {
+    if (profileEditorModal.isOpen && profile) {
+      setNickname(profile.nickname);
+      setBio(profile.bio);
+      setAvatarImage(null);
+    }
+  }, [profile, profileEditorModal.isOpen]);
+
+  const handleSelectImage = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const file = e.target.files[0];
+    setAvatarImage({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    });
+    if (avatarImage) {
+      URL.revokeObjectURL(avatarImage.previewUrl);
+    }
+  };
+  const handleCloseModal = () => {
     // session정보와 useState정보가 다를때만
-    if (profile?.avatar_url) {
+    if (profile?.nickname !== nickname || profile.bio !== bio) {
       openAlertModal({
         title: "프로필 수정이 완료되지 않았습니다.",
         description: "이 화면에서 나가면 수정중이던 내용이 사라집니다.",
@@ -37,6 +78,15 @@ export default function ProfileEditorModal() {
     }
     profileEditorModal.actions.close();
   };
+  const handleUpdateClick = () => {
+    if (nickname.trim() === "") return;
+    updateProfile({
+      userId: session!.user.id,
+      nickname,
+      bio,
+      avatarImageFile: avatarImage?.file,
+    });
+  };
   return (
     <Dialog open={profileEditorModal.isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="flex flex-col gap-5">
@@ -47,20 +97,45 @@ export default function ProfileEditorModal() {
           <>
             <div className="flex flex-col gap-2">
               <div className="text-muted-foreground">프로필 이미지</div>
+              <Input
+                disabled={isUpdateProfilePending}
+                onChange={handleSelectImage}
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+              />
               <img
-                src={profile.avatar_url || defaultAvatar}
+                onClick={() => {
+                  if (fileInputRef.current) fileInputRef.current.click();
+                }}
+                src={
+                  avatarImage?.previewUrl || profile.avatar_url || defaultAvatar
+                }
                 className="h-20 w-20 cursor-pointer rounded-full object-cover"
               />
             </div>
             <div className="flex flex-col gap-2">
               <div className="text-muted-foreground">닉네임</div>
-              <Input />
+              <Input
+                disabled={isUpdateProfilePending}
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+              />
             </div>
             <div className="flex flex-col gap-2">
-              <div className="text-muted-foreground">bi0</div>
-              <Input />
+              <div className="text-muted-foreground">bio</div>
+              <Input
+                disabled={isUpdateProfilePending}
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+              />
             </div>
-            <Button onClick={handlesaveButton} className="cursor-pointer">
+            <Button
+              disabled={isUpdateProfilePending}
+              onClick={handleUpdateClick}
+              className="cursor-pointer"
+            >
               수정하기
             </Button>
           </>
