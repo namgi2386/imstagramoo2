@@ -6,10 +6,12 @@ export async function fetchPosts({
   from,
   to,
   userId,
+  authorId,
 }: {
   from: number;
   to: number;
   userId: string;
+  authorId?: string;
 }) {
   let query = supabase
     .from("post")
@@ -18,6 +20,9 @@ export async function fetchPosts({
     .order("created_at", { ascending: false });
   if (from !== undefined && to !== undefined) {
     query = query.range(from, to);
+  }
+  if (authorId) {
+    query = query.eq("author_id", authorId);
   }
   const { data, error } = await query;
   if (error) throw error;
