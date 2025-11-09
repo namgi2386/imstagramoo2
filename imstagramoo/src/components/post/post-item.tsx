@@ -37,7 +37,7 @@ export default function PostItem({ postId }: { postId: number }) {
       <div className="flex justify-between">
         {/* 1-1. 유저 정보 */}
         <div className="flex items-start gap-4">
-          <Link to={`profile/${post.author_id}`}>
+          <Link to={`/profile/${post.author_id}`}>
             <img
               src={post.author.avatar_url || defaultAvatar}
               alt={`${post.author.nickname}의 프로필 이미지`}

@@ -2,6 +2,7 @@ import { Link, Outlet } from "react-router";
 import logo from "@/assets/imstalogo.png";
 import { SunIcon } from "lucide-react";
 import defaultProfile from "@/assets/default-profile.png";
+import ProfileButton from "@/components/header/profile-button";
 
 export default function GlobalLayout() {
   return (
@@ -20,7 +21,7 @@ export default function GlobalLayout() {
             <div className="hover:bg-muted cursor-pointer rounded-full p-2">
               <SunIcon />
             </div>
-            <img className="h-6" src={defaultProfile} />
+            <ProfileButton />
           </div>
         </div>
       </header>
