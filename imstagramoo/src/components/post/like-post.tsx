@@ -34,7 +34,7 @@ export default function LikePostButton({
       <HeartIcon
         className={`h-4 w-4 ${isLiked && "fill-foreground border-foreground"}`}
       />
-      <span>0</span>
+      <span>{likeCount}</span>
     </div>
   );
 }
