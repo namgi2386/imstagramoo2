@@ -2,8 +2,12 @@ import Fallback from "@/components/fallback";
 import Loader from "@/components/loader";
 import { useProfileData } from "@/hooks/queries/use-profile-data";
 import defaultAvatar from "@/assets/default-profile.png";
+import { useSession } from "@/store/session";
+import EditProfileButton from "@/components/profile/edit-profile-button";
 
 export default function ProfileInfo({ userId }: { userId: string }) {
+  const session = useSession();
+  const isMine = session?.user.id === userId;
   const {
     data: profile,
     error: fetchProfileError,
@@ -21,6 +25,7 @@ export default function ProfileInfo({ userId }: { userId: string }) {
         <div className="text-xl font-bold">{profile.nickname}</div>
         <div className="text-muted-foreground">{profile.bio}</div>
       </div>
+      {isMine && <EditProfileButton />}
     </div>
   );
 }
