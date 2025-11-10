@@ -28,3 +28,22 @@ export async function createComment({
   if (error) throw error;
   return data;
 }
+
+export async function updateComment({
+  id,
+  content,
+}: {
+  id: number;
+  content: string;
+}) {
+  const { data, error } = await supabase
+    .from("comment")
+    .update({
+      content,
+    })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
