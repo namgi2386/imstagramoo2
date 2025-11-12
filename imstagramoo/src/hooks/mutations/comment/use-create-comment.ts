@@ -19,7 +19,7 @@ export function useCreateComment(callbacks: UseMutationCallback) {
           if (!comments)
             throw new Error("댓글이 캐시 데이터에 보관되어있지 않습니다");
           if (!profile) throw new Error("사용자의 프로필 데이터가 없습니다.");
-          return [{ ...newComment, author: profile }, ...comments];
+          return [...comments, { ...newComment, author: profile }]; // 넣는 위치에 따라 맨앞/맨뒤 선택가능
         },
       );
     },
