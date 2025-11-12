@@ -3,6 +3,7 @@ import logo from "@/assets/imstalogo.png";
 import { SunIcon } from "lucide-react";
 import defaultProfile from "@/assets/default-profile.png";
 import ProfileButton from "@/components/header/profile-button";
+import ThemeButton from "@/components/header/theme-button";
 
 export default function GlobalLayout() {
   return (
@@ -18,9 +19,7 @@ export default function GlobalLayout() {
             <div className="font-bold">imstagramoo</div>
           </Link>
           <div className="flex items-center gap-5">
-            <div className="hover:bg-muted cursor-pointer rounded-full p-2">
-              <SunIcon />
-            </div>
+            <ThemeButton />
             <ProfileButton />
           </div>
         </div>
