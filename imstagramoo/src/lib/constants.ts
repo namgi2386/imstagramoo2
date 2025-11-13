@@ -16,3 +16,4 @@ export const QUERY_KEYS = {
   },
 };
 export const BUCKET_NAME = "uploads";
+export const MAX_COMMENT_DEPTH = 5;

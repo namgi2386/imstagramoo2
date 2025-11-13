@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useCreateComment } from "@/hooks/mutations/comment/use-create-comment";
 import { toast } from "sonner";
 import { useUpdateComment } from "@/hooks/mutations/comment/use-update-comment";
+import { MAX_COMMENT_DEPTH } from "@/lib/constants";
 
 type CreateMode = {
   type: "CREAT";
@@ -22,6 +23,7 @@ type ReplyMode = {
   postId: number;
   parentCommentId: number;
   rootCommentId: number;
+  depth: number;
   onClose: () => void;
 };
 
@@ -62,11 +64,21 @@ export default function CommentEditor(props: Props) {
     if (props.type === "CREAT") {
       createComment({ postId: props.postId, content });
     } else if (props.type === "REPLY") {
+      if (props.depth >= MAX_COMMENT_DEPTH) {
+        toast.error(
+          "대댓의 최대 깊이를 초과했습니다. 댓글 작성에 실패했습니다.",
+          {
+            position: "top-center",
+          },
+        );
+        return;
+      }
       createComment({
         postId: props.postId,
         content,
         parentCommentId: props.parentCommentId,
         rootCommentId: props.rootCommentId,
+        depth: props.depth + 1
       });
     } else {
       updateComment({

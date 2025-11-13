@@ -1,4 +1,5 @@
 import supabase from "@/lib/supabase";
+import { MAX_COMMENT_DEPTH } from "@/lib/constants";
 
 export async function fetchComments(postId: number) {
   const { data, error } = await supabase
@@ -15,12 +16,20 @@ export async function createComment({
   content,
   parentCommentId,
   rootCommentId,
+  depth,
 }: {
   postId: number;
   content: string;
   parentCommentId?: number;
   rootCommentId?: number;
+  depth?: number;
 }) {
+  const finalDepth = depth ?? 0;
+
+  // depth 검증
+  if (finalDepth > MAX_COMMENT_DEPTH) {
+    throw new Error("Maximum comment depth exceeded");
+  }
   const { data, error } = await supabase
     .from("comment")
     .insert({
@@ -28,6 +37,7 @@ export async function createComment({
       content: content,
       parent_comment_id: parentCommentId,
       root_comment_id: rootCommentId,
+      depth: finalDepth,
     })
     .select()
     .single();

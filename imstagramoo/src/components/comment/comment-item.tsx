@@ -8,6 +8,7 @@ import CommentEditor from "@/components/comment/comment-editor";
 import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
 import { useOpenAlertModal } from "@/store/alert-modal";
+import { MAX_COMMENT_DEPTH } from "@/lib/constants";
 
 export default function CommentItem(props: NestedComment) {
   const session = useSession();
@@ -74,12 +75,14 @@ export default function CommentItem(props: NestedComment) {
           )}
           <div className="text-muted-foreground flex justify-between text-sm">
             <div className="flex items-center gap-2">
-              <div
-                onClick={toggleIsReply}
-                className="cursor-pointer hover:underline"
-              >
-                댓글
-              </div>
+              {props.depth < MAX_COMMENT_DEPTH && (
+                <div
+                  onClick={toggleIsReply}
+                  className="cursor-pointer hover:underline"
+                >
+                  댓글
+                </div>
+              )}
               <div className="bg-border h-[13px] w-0.5"></div>
               <div>{formatTimeAgo(props.created_at)}</div>
             </div>
@@ -110,6 +113,7 @@ export default function CommentItem(props: NestedComment) {
               parentCommentId={props.id}
               rootCommentId={props.root_comment_id || props.id}
               onClose={toggleIsReply}
+              depth={props.depth}
             />
           )}
         </div>

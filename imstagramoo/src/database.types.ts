@@ -19,6 +19,7 @@ export type Database = {
           author_id: string
           content: string
           created_at: string
+          depth: number
           id: number
           parent_comment_id: number | null
           post_id: number
@@ -28,6 +29,7 @@ export type Database = {
           author_id?: string
           content?: string
           created_at?: string
+          depth?: number
           id?: number
           parent_comment_id?: number | null
           post_id: number
@@ -37,6 +39,7 @@ export type Database = {
           author_id?: string
           content?: string
           created_at?: string
+          depth?: number
           id?: number
           parent_comment_id?: number | null
           post_id?: number
