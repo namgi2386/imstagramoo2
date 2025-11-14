@@ -9,6 +9,8 @@ import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
 import { useOpenAlertModal } from "@/store/alert-modal";
 import { MAX_COMMENT_DEPTH } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { MessageSquareText } from "lucide-react";
 
 export default function CommentItem(props: NestedComment) {
   const session = useSession();
@@ -43,7 +45,7 @@ export default function CommentItem(props: NestedComment) {
   const isOverTwoLevels = props.parent_comment_id !== props.root_comment_id;
   return (
     <div
-      className={`flex flex-col gap-8 ${isRootComment ? "border-b" : "ml-6"} pb-5`}
+      className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-6"} pb-5`}
     >
       <div className="flex items-start gap-4">
         <Link to={"#"}>
@@ -74,14 +76,17 @@ export default function CommentItem(props: NestedComment) {
             </div>
           )}
           <div className="text-muted-foreground flex justify-between text-sm">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {props.depth < MAX_COMMENT_DEPTH && (
-                <div
+                // <div
+                //   onClick={toggleIsReply}
+                //   className="cursor-pointer hover:underline"
+                // >
+                // </div>
+                <MessageSquareText
                   onClick={toggleIsReply}
-                  className="cursor-pointer hover:underline"
-                >
-                  댓글
-                </div>
+                  className="hover:bg-muted h-4 w-4 cursor-pointer"
+                />
               )}
               <div className="bg-border h-[13px] w-0.5"></div>
               <div>{formatTimeAgo(props.created_at)}</div>
@@ -106,6 +111,11 @@ export default function CommentItem(props: NestedComment) {
               )}
             </div>
           </div>
+          <div>
+            <Button variant={"outline"} className="cursor-pointer px-1">
+              답글 {props.reply_count}개 {">"}
+            </Button>
+          </div>
           {isReply && (
             <CommentEditor
               type="REPLY"
@@ -118,9 +128,9 @@ export default function CommentItem(props: NestedComment) {
           )}
         </div>
       </div>
-      {props.children.map((comment) => (
+      {/* {props.children.map((comment) => (
         <CommentItem key={comment.id} {...comment} />
-      ))}
+      ))} */}
     </div>
   );
 }

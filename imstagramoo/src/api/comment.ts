@@ -1,11 +1,28 @@
 import supabase from "@/lib/supabase";
 import { MAX_COMMENT_DEPTH } from "@/lib/constants";
 
-export async function fetchComments(postId: number) {
+export async function fetchRootComments(postId: number) {
   const { data, error } = await supabase
     .from("comment")
     .select("*, author:profile!author_id (*)")
     .eq("post_id", postId)
+    .is("root_comment_id", null)
+    .order("reply_count", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+export async function fetchReplyComments({
+  postId,
+  rootCommentId,
+}: {
+  postId: number;
+  rootCommentId: number;
+}) {
+  const { data, error } = await supabase
+    .from("comment")
+    .select("*, author:profile!author_id (*)")
+    .eq("post_id", postId)
+    .eq("root_comment_id", rootCommentId)
     .order("created_at", { ascending: true });
   if (error) throw error;
   return data;

@@ -13,7 +13,14 @@ export const QUERY_KEYS = {
   comment: {
     all: ["comment"],
     post: (postId: number) => ["comment", "post", postId],
+    root: (postId: number) => ["comment", "root", postId],
+    replies: (postId: number, rootCommentId: number) => [
+      "comment",
+      "replies",
+      postId,
+      rootCommentId,
+    ],
   },
 };
 export const BUCKET_NAME = "uploads";
-export const MAX_COMMENT_DEPTH = 5;
+export const MAX_COMMENT_DEPTH = 3;

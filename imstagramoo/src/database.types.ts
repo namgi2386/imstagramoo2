@@ -22,7 +22,9 @@ export type Database = {
           depth: number
           id: number
           parent_comment_id: number | null
+          path: string
           post_id: number
+          reply_count: number
           root_comment_id: number | null
         }
         Insert: {
@@ -32,7 +34,9 @@ export type Database = {
           depth?: number
           id?: number
           parent_comment_id?: number | null
+          path?: string
           post_id: number
+          reply_count?: number
           root_comment_id?: number | null
         }
         Update: {
@@ -42,7 +46,9 @@ export type Database = {
           depth?: number
           id?: number
           parent_comment_id?: number | null
+          path?: string
           post_id?: number
+          reply_count?: number
           root_comment_id?: number | null
         }
         Relationships: [
@@ -101,6 +107,13 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "post"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "like_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile"
             referencedColumns: ["id"]
           },
         ]

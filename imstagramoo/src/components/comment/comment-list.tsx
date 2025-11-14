@@ -1,7 +1,7 @@
 import CommentItem from "@/components/comment/comment-item";
 import Fallback from "@/components/fallback";
 import Loader from "@/components/loader";
-import { useCommentsData } from "@/hooks/queries/use-comments-data";
+import { useRootCommentsData } from "@/hooks/queries/use-comments-data";
 import type { Comment, NestedComment } from "@/types";
 
 function toNestedComments(comments: Comment[]): NestedComment[] {
@@ -33,7 +33,7 @@ export default function CommentList({ postId }: { postId: number }) {
     data: comments,
     error: fetchCommentsError,
     isPending: isFetchCommentsPending,
-  } = useCommentsData(postId);
+  } = useRootCommentsData(postId);
   if (fetchCommentsError) return <Fallback />;
   if (isFetchCommentsPending) return <Loader />;
   const nestedComments = toNestedComments(comments);
