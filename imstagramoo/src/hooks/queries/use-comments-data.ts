@@ -12,9 +12,11 @@ export function useRootCommentsData(postId: number) {
 export function useReplyCommentsData({
   postId,
   rootCommentId,
+  enabled = true,
 }: {
   postId: number;
   rootCommentId: number;
+  enabled?: boolean;
 }) {
   return useQuery({
     queryKey: QUERY_KEYS.comment.replies(postId, rootCommentId),
@@ -23,5 +25,6 @@ export function useReplyCommentsData({
         postId,
         rootCommentId,
       }),
+    enabled,
   });
 }

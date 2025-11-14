@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import defaultAvatar from "@/assets/default-profile.png";
-import type { NestedComment } from "@/types";
+import type { Comment } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useState } from "react";
@@ -8,13 +8,18 @@ import CommentEditor from "@/components/comment/comment-editor";
 import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
 import { useOpenAlertModal } from "@/store/alert-modal";
-import { MAX_COMMENT_DEPTH } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { MessageSquareText } from "lucide-react";
+import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 
-export default function CommentItem(props: NestedComment) {
+export default function CommentItem(props: Comment) {
   const session = useSession();
   const openAlertModal = useOpenAlertModal();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [isReply, setIsReply] = useState(false);
+  const [isRepliesOpened, setIsRepliesOpened] = useState(false); // 추가
+
   const { mutate: deleteComment, isPending: isDeleteCommentPending } =
     useDeleteComment({
       onError: () => {
@@ -23,14 +28,28 @@ export default function CommentItem(props: NestedComment) {
         });
       },
     });
-  const [isEditing, setIsEditing] = useState(false);
-  const [isReply, setIsReply] = useState(false);
+
+  const {
+    data: replies,
+    error: fetchRepliesError,
+    isPending: isRepliesPending,
+  } = useReplyCommentsData({
+    postId: props.post_id,
+    rootCommentId: props.root_comment_id || props.id,
+    enabled: isRepliesOpened,
+  });
+
   const toggleIsEditing = () => {
     setIsEditing(!isEditing);
   };
   const toggleIsReply = () => {
     setIsReply(!isReply);
+    setIsRepliesOpened(true);
   };
+  const toggleIsRepliesOpened = () => {
+    setIsRepliesOpened(!isRepliesOpened);
+  };
+
   const handleDeleteClick = () => {
     openAlertModal({
       title: "댓글삭제",
@@ -41,8 +60,8 @@ export default function CommentItem(props: NestedComment) {
     });
   };
   const isMine = session?.user.id === props.author.id;
-  const isRootComment = props.parentComment === undefined;
-  const isOverTwoLevels = props.parent_comment_id !== props.root_comment_id;
+  const isRootComment = props.root_comment_id === null;
+  const isOverTwoLevels = props.depth > 0;
   return (
     <div
       className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-6"} pb-5`}
@@ -69,7 +88,7 @@ export default function CommentItem(props: NestedComment) {
             <div>
               {isOverTwoLevels && (
                 <span className="font-bold text-blue-500">
-                  @{props.parentComment?.author.nickname}
+                  @{props.parent_comment_id}
                 </span>
               )}
               {props.content}
@@ -77,17 +96,10 @@ export default function CommentItem(props: NestedComment) {
           )}
           <div className="text-muted-foreground flex justify-between text-sm">
             <div className="flex items-center gap-4">
-              {props.depth < MAX_COMMENT_DEPTH && (
-                // <div
-                //   onClick={toggleIsReply}
-                //   className="cursor-pointer hover:underline"
-                // >
-                // </div>
-                <MessageSquareText
-                  onClick={toggleIsReply}
-                  className="hover:bg-muted h-4 w-4 cursor-pointer"
-                />
-              )}
+              <MessageSquareText
+                onClick={toggleIsReply}
+                className="hover:bg-muted h-4 w-4 cursor-pointer"
+              />
               <div className="bg-border h-[13px] w-0.5"></div>
               <div>{formatTimeAgo(props.created_at)}</div>
             </div>
@@ -112,9 +124,15 @@ export default function CommentItem(props: NestedComment) {
             </div>
           </div>
           <div>
-            <Button variant={"outline"} className="cursor-pointer px-1">
-              답글 {props.reply_count}개 {">"}
-            </Button>
+            {isRootComment && (
+              <Button
+                onClick={toggleIsRepliesOpened}
+                variant={"outline"}
+                className="cursor-pointer px-1"
+              >
+                답글 {props.reply_count}개 {">"}
+              </Button>
+            )}
           </div>
           {isReply && (
             <CommentEditor
@@ -128,9 +146,9 @@ export default function CommentItem(props: NestedComment) {
           )}
         </div>
       </div>
-      {/* {props.children.map((comment) => (
-        <CommentItem key={comment.id} {...comment} />
-      ))} */}
+      {isRepliesOpened &&
+        isRootComment &&
+        replies?.map((reply) => <CommentItem key={reply.id} {...reply} />)}
     </div>
   );
 }
