@@ -8,11 +8,11 @@ import CommentEditor from "@/components/comment/comment-editor";
 import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
 import { useOpenAlertModal } from "@/store/alert-modal";
-import { Button } from "@/components/ui/button";
-import { MessageSquareText } from "lucide-react";
+import { ChevronRight, ChevronUp, MessageSquareText } from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 import Loader from "@/components/loader";
 import Fallback from "@/components/fallback";
+import CommentItemActionbutton from "@/components/comment/comment-item-action-button";
 
 function isNestedReply(comment: Comment | NestedReply): comment is NestedReply {
   return "children" in comment;
@@ -96,16 +96,26 @@ export default function CommentItem(props: Comment | NestedReply) {
       className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-8"} pb-5`}
     >
       <div className="flex items-start gap-4">
-        <Link to={"#"}>
+        <Link to={`/profile/${props.author_id}`}>
           <div className="flex h-full flex-col">
             <img
-              className="h-10 w-10 rounded-full object-cover"
+              className={`${isRootComment ? "h-10 w-10" : "h-8 w-8"} rounded-full object-cover`}
               src={props.author.avatar_url || defaultAvatar}
             />
           </div>
         </Link>
         <div className="flex w-full flex-col gap-2">
-          <div className="font-bold">{props.author.nickname}</div>
+          <div className="flex items-center justify-between">
+            <Link to={`/profile/${props.author_id}`}>
+              <div className="font-bold">{props.author.nickname}</div>
+            </Link>
+            {isMine && (
+              <CommentItemActionbutton
+                toggleIsEditing={toggleIsEditing}
+                handleDeleteClick={handleDeleteClick}
+              />
+            )}
+          </div>
           {isEditing ? (
             <CommentEditor
               type={"EDIT"}
@@ -116,7 +126,7 @@ export default function CommentItem(props: Comment | NestedReply) {
           ) : (
             <div>
               {!isRootComment && props.parentCommentAuthorNickname && (
-                <span className="font-bold text-blue-500">
+                <span className="text-blue-500">
                   @{props.parentCommentAuthorNickname}
                 </span>
               )}
@@ -132,37 +142,25 @@ export default function CommentItem(props: Comment | NestedReply) {
               <div className="bg-border h-[13px] w-0.5"></div>
               <div>{formatTimeAgo(props.created_at)}</div>
             </div>
-            <div className="flex items-center gap-2">
-              {isMine && (
-                <div
-                  className={`${isDeleteCommentPending ? "hidden" : ""} flex items-center justify-center gap-2`}
-                >
-                  <div
-                    onClick={toggleIsEditing}
-                    className="cursor-pointer hover:underline"
-                  >
-                    수정
-                  </div>
-                  <div className="bg-border h-[13px] w-0.5"></div>
-                  <div
-                    onClick={handleDeleteClick}
-                    className="cursor-pointer hover:underline"
-                  >
-                    삭제
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
           <div>
-            {isRootComment && (
-              <Button
+            {isRootComment && props.reply_count > 0 && (
+              <div
                 onClick={toggleIsRepliesOpened}
-                variant={"outline"}
-                className="cursor-pointer px-1"
+                className="text-muted-foreground text-md flex cursor-pointer items-center font-semibold select-none"
               >
-                답글 {props.reply_count}개 {">"}
-              </Button>
+                {isRepliesOpened ? (
+                  <>
+                    <p>답글</p>
+                    <ChevronUp />
+                  </>
+                ) : (
+                  <>
+                    <p>답글 {props.reply_count}개</p>
+                    <ChevronRight />
+                  </>
+                )}
+              </div>
             )}
           </div>
           {isReply && (

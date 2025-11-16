@@ -7,7 +7,7 @@ export async function fetchRootComments(postId: number) {
     .select("*, author:profile!author_id (*)")
     .eq("post_id", postId)
     .is("root_comment_id", null)
-    .order("reply_count", { ascending: true });
+    .order("reply_count", { ascending: false });
   if (error) throw error;
   return data;
 }
