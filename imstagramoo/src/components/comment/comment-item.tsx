@@ -3,7 +3,7 @@ import defaultAvatar from "@/assets/default-profile.png";
 import type { Comment, NestedReply } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
 import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import { useOpenAlertModal } from "@/store/alert-modal";
 import { Button } from "@/components/ui/button";
 import { MessageSquareText } from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
+import Loader from "@/components/loader";
+import Fallback from "@/components/fallback";
 
 function isNestedReply(comment: Comment | NestedReply): comment is NestedReply {
   return "children" in comment;
@@ -91,7 +93,7 @@ export default function CommentItem(props: Comment | NestedReply) {
   const isRootComment = !isNestedReply(props);
   return (
     <div
-      className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-6"} pb-5`}
+      className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-8"} pb-5`}
     >
       <div className="flex items-start gap-4">
         <Link to={"#"}>
@@ -132,7 +134,9 @@ export default function CommentItem(props: Comment | NestedReply) {
             </div>
             <div className="flex items-center gap-2">
               {isMine && (
-                <>
+                <div
+                  className={`${isDeleteCommentPending ? "hidden" : ""} flex items-center justify-center gap-2`}
+                >
                   <div
                     onClick={toggleIsEditing}
                     className="cursor-pointer hover:underline"
@@ -146,7 +150,7 @@ export default function CommentItem(props: Comment | NestedReply) {
                   >
                     삭제
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -174,12 +178,25 @@ export default function CommentItem(props: Comment | NestedReply) {
           )}
         </div>
       </div>
-      {isRepliesOpened &&
-        isRootComment &&
-        replies &&
-        toNestedReplies(replies).map((reply) => (
-          <CommentItem key={reply.id} {...reply} />
-        ))}
+      {isRepliesOpened && isRootComment && (
+        <>
+          {isRepliesPending && (
+            <div className="text-muted-foreground my-6 ml-12 text-sm">
+              <Loader />
+            </div>
+          )}
+          {fetchRepliesError && (
+            <div className="flex flex-col items-center justify-center text-sm">
+              <Fallback />
+              답글을 불러오는데 실패했습니다.
+            </div>
+          )}
+          {replies &&
+            toNestedReplies(replies).map((reply) => (
+              <CommentItem key={reply.id} {...reply} />
+            ))}
+        </>
+      )}
       {!isRootComment &&
         props.children.map((reply) => (
           <CommentItem key={reply.id} {...reply} />
