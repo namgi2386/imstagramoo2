@@ -3,19 +3,41 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
+import { useOpenAlertModal } from "@/store/alert-modal";
 
 import { PopoverClose } from "@radix-ui/react-popover";
 import { EllipsisVertical } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function CommentItemActionbutton({
   toggleIsEditing,
-  handleDeleteClick,
+  commentId,
 }: {
   toggleIsEditing: () => void;
-  handleDeleteClick: () => void;
+  commentId: number;
 }) {
   const [isEllipsisOpened, setIsEllipsisOpened] = useState(false);
+  const openAlertModal = useOpenAlertModal();
+
+  const { mutate: deleteComment, isPending: isDeleteCommentPending } =
+    useDeleteComment({
+      onError: () => {
+        toast.error("댓글 삭제에 문제가 생겼습니다.", {
+          position: "top-center",
+        });
+      },
+    });
+  const handleDeleteClick = () => {
+    openAlertModal({
+      title: "댓글삭제",
+      description: "되돌릴 수 없습니다.",
+      onPositive: () => {
+        deleteComment(commentId);
+      },
+    });
+  };
   return (
     <Popover>
       <PopoverTrigger>

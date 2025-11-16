@@ -5,9 +5,6 @@ import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
-import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
-import { toast } from "sonner";
-import { useOpenAlertModal } from "@/store/alert-modal";
 import { ChevronRight, ChevronUp, MessageSquareText } from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 import Loader from "@/components/loader";
@@ -44,20 +41,10 @@ function toNestedReplies(replies: Comment[]): NestedReply[] {
 
 export default function CommentItem(props: Comment | NestedReply) {
   const session = useSession();
-  const openAlertModal = useOpenAlertModal();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isReply, setIsReply] = useState(false);
-  const [isRepliesOpened, setIsRepliesOpened] = useState(false); // 추가
-
-  const { mutate: deleteComment, isPending: isDeleteCommentPending } =
-    useDeleteComment({
-      onError: () => {
-        toast.error("댓글 삭제에 문제가 생겼습니다.", {
-          position: "top-center",
-        });
-      },
-    });
+  const [isRepliesOpened, setIsRepliesOpened] = useState(false); // 추가;
 
   const {
     data: replies,
@@ -78,16 +65,6 @@ export default function CommentItem(props: Comment | NestedReply) {
   };
   const toggleIsRepliesOpened = () => {
     setIsRepliesOpened(!isRepliesOpened);
-  };
-
-  const handleDeleteClick = () => {
-    openAlertModal({
-      title: "댓글삭제",
-      description: "되돌릴 수 없습니다.",
-      onPositive: () => {
-        deleteComment(props.id);
-      },
-    });
   };
   const isMine = session?.user.id === props.author.id;
   const isRootComment = !isNestedReply(props);
@@ -112,7 +89,7 @@ export default function CommentItem(props: Comment | NestedReply) {
             {isMine && (
               <CommentItemActionbutton
                 toggleIsEditing={toggleIsEditing}
-                handleDeleteClick={handleDeleteClick}
+                commentId={props.id}
               />
             )}
           </div>
