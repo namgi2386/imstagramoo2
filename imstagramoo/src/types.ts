@@ -9,6 +9,11 @@ export type CommentEntitiy = Database["public"]["Tables"]["comment"]["Row"];
 export type Post = PostEntity & { author: ProfileEntitiy; isLiked: boolean };
 export type Comment = CommentEntitiy & { author: ProfileEntitiy };
 
+export type NestedReply = Comment & {
+  parentCommentAuthorNickname?: string;
+  children: NestedReply[];
+};
+
 export type UseMutationCallback = {
   onSuccess?: () => void;
   onError?: (error: Error) => void;

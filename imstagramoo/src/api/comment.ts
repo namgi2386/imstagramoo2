@@ -34,12 +34,14 @@ export async function createComment({
   parentCommentId,
   rootCommentId,
   depth,
+  path,
 }: {
   postId: number;
   content: string;
   parentCommentId?: number;
   rootCommentId?: number;
   depth?: number;
+  path?: string;
 }) {
   const finalDepth = depth ?? 0;
 
@@ -55,6 +57,7 @@ export async function createComment({
       parent_comment_id: parentCommentId,
       root_comment_id: rootCommentId,
       depth: finalDepth,
+      path: path,
     })
     .select()
     .single();

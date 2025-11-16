@@ -1,9 +1,9 @@
 import { Link } from "react-router";
 import defaultAvatar from "@/assets/default-profile.png";
-import type { Comment } from "@/types";
+import type { Comment, NestedReply } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
 import { useDeleteComment } from "@/hooks/mutations/comment/use-delete-comment";
 import { toast } from "sonner";
@@ -12,7 +12,35 @@ import { Button } from "@/components/ui/button";
 import { MessageSquareText } from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 
-export default function CommentItem(props: Comment) {
+function isNestedReply(comment: Comment | NestedReply): comment is NestedReply {
+  return "children" in comment;
+}
+
+function toNestedReplies(replies: Comment[]): NestedReply[] {
+  const replyMap = new Map<number, NestedReply>();
+  replies.forEach((reply) => {
+    replyMap.set(reply.id, { ...reply, children: [] });
+  });
+  const result: NestedReply[] = [];
+  replies.forEach((reply) => {
+    const node = replyMap.get(reply.id)!;
+    if (reply.depth === 1) {
+      result.push(node);
+    } else if (reply.parent_comment_id && reply.path) {
+      const parentCommentId = replyMap.get(Number(reply.path.split(".").pop()));
+      const repliedCommentId = replyMap.get(reply.parent_comment_id);
+      if (parentCommentId && repliedCommentId) {
+        parentCommentId.children.push({
+          ...node,
+          parentCommentAuthorNickname: repliedCommentId.author.nickname,
+        });
+      }
+    }
+  });
+  return result;
+}
+
+export default function CommentItem(props: Comment | NestedReply) {
   const session = useSession();
   const openAlertModal = useOpenAlertModal();
 
@@ -60,8 +88,7 @@ export default function CommentItem(props: Comment) {
     });
   };
   const isMine = session?.user.id === props.author.id;
-  const isRootComment = props.root_comment_id === null;
-  const isOverTwoLevels = props.depth > 0;
+  const isRootComment = !isNestedReply(props);
   return (
     <div
       className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-6"} pb-5`}
@@ -86,9 +113,9 @@ export default function CommentItem(props: Comment) {
             />
           ) : (
             <div>
-              {isOverTwoLevels && (
+              {!isRootComment && props.parentCommentAuthorNickname && (
                 <span className="font-bold text-blue-500">
-                  @{props.parent_comment_id}
+                  @{props.parentCommentAuthorNickname}
                 </span>
               )}
               {props.content}
@@ -142,13 +169,21 @@ export default function CommentItem(props: Comment) {
               rootCommentId={props.root_comment_id || props.id}
               onClose={toggleIsReply}
               depth={props.depth}
+              path={props.path}
             />
           )}
         </div>
       </div>
       {isRepliesOpened &&
         isRootComment &&
-        replies?.map((reply) => <CommentItem key={reply.id} {...reply} />)}
+        replies &&
+        toNestedReplies(replies).map((reply) => (
+          <CommentItem key={reply.id} {...reply} />
+        ))}
+      {!isRootComment &&
+        props.children.map((reply) => (
+          <CommentItem key={reply.id} {...reply} />
+        ))}
     </div>
   );
 }

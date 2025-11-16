@@ -24,6 +24,7 @@ type ReplyMode = {
   parentCommentId: number;
   rootCommentId: number;
   depth: number;
+  path: string;
   onClose: () => void;
 };
 
@@ -64,7 +65,16 @@ export default function CommentEditor(props: Props) {
     if (props.type === "CREAT") {
       createComment({ postId: props.postId, content });
     } else if (props.type === "REPLY") {
-      if (props.depth >= MAX_COMMENT_DEPTH) {
+      if (!props.parentCommentId) return;
+      const prevDepth = props.depth;
+      const prevPath = props.path;
+      let newDepth = 0;
+      let newPath = "";
+      if (prevDepth < MAX_COMMENT_DEPTH) {
+        newDepth = prevDepth + 1;
+      } else if (prevDepth === MAX_COMMENT_DEPTH) {
+        newDepth = prevDepth;
+      } else {
         toast.error(
           "대댓의 최대 깊이를 초과했습니다. 댓글 작성에 실패했습니다.",
           {
@@ -73,12 +83,32 @@ export default function CommentEditor(props: Props) {
         );
         return;
       }
+      if (prevPath === "") {
+        newPath = props.parentCommentId.toString();
+      } else {
+        const pathline = prevPath.split(".");
+        if (pathline.length < MAX_COMMENT_DEPTH) {
+          newPath = prevPath + "." + props.parentCommentId.toString();
+        } else if (pathline.length === MAX_COMMENT_DEPTH) {
+          newPath = prevPath;
+        } else {
+          toast.error(
+            "대댓의 최대 깊이를 초과했습니다. 댓글 작성에 실패했습니다.",
+            {
+              position: "top-center",
+            },
+          );
+          return;
+        }
+      }
+
       createComment({
         postId: props.postId,
         content,
         parentCommentId: props.parentCommentId,
         rootCommentId: props.rootCommentId,
-        depth: props.depth + 1
+        depth: newDepth,
+        path: newPath,
       });
     } else {
       updateComment({
