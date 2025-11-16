@@ -3,7 +3,7 @@ import defaultAvatar from "@/assets/default-profile.png";
 import type { Comment, NestedReply } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
 import { ChevronRight, ChevronUp, MessageSquareText } from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
@@ -44,7 +44,10 @@ export default function CommentItem(props: Comment | NestedReply) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isReply, setIsReply] = useState(false);
-  const [isRepliesOpened, setIsRepliesOpened] = useState(false); // 추가;
+  const [isRepliesOpened, setIsRepliesOpened] = useState(false);
+
+  const isMine = session?.user.id === props.author.id;
+  const isRootComment = !isNestedReply(props);
 
   const {
     data: replies,
@@ -56,6 +59,11 @@ export default function CommentItem(props: Comment | NestedReply) {
     enabled: isRepliesOpened,
   });
 
+  const nestedReplies = useMemo(
+    () => (replies ? toNestedReplies(replies) : []),
+    [replies],
+  );
+
   const toggleIsEditing = () => {
     setIsEditing(!isEditing);
   };
@@ -66,8 +74,7 @@ export default function CommentItem(props: Comment | NestedReply) {
   const toggleIsRepliesOpened = () => {
     setIsRepliesOpened(!isRepliesOpened);
   };
-  const isMine = session?.user.id === props.author.id;
-  const isRootComment = !isNestedReply(props);
+
   return (
     <div
       className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-8"} pb-5`}
@@ -167,7 +174,7 @@ export default function CommentItem(props: Comment | NestedReply) {
             </div>
           )}
           {replies &&
-            toNestedReplies(replies).map((reply) => (
+            nestedReplies.map((reply) => (
               <CommentItem key={reply.id} {...reply} />
             ))}
         </>
