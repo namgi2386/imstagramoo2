@@ -14,17 +14,25 @@ export async function fetchRootComments(postId: number) {
 export async function fetchReplyComments({
   postId,
   rootCommentId,
+  from,
+  to,
 }: {
   postId: number;
   rootCommentId: number;
+  from: number;
+  to: number;
 }) {
-  const { data, error } = await supabase
+  let query = supabase
     .from("comment")
     .select("*, author:profile!author_id (*)")
     .eq("post_id", postId)
     .eq("root_comment_id", rootCommentId)
     .order("created_at", { ascending: true });
-  if (error) throw error;
+  if(from !== undefined && to !== undefined){
+    query = query.range(from , to)
+  }
+  const {data , error} = await query;
+    if (error) throw error;
   return data;
 }
 

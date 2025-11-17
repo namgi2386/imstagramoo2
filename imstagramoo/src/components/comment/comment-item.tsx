@@ -5,7 +5,13 @@ import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useMemo, useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
-import { ChevronRight, ChevronUp, MessageSquareText } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronUp,
+  CornerDownRight,
+  LoaderCircleIcon,
+  MessageSquareText,
+} from "lucide-react";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 import Loader from "@/components/loader";
 import Fallback from "@/components/fallback";
@@ -53,16 +59,28 @@ export default function CommentItem(props: Comment | NestedReply) {
     data: replies,
     error: fetchRepliesError,
     isPending: isRepliesPending,
+    fetchNextPage: fetchNextPageReply,
+    hasNextPage,
+    isFetchingNextPage,
   } = useReplyCommentsData({
     postId: props.post_id,
     rootCommentId: props.root_comment_id || props.id,
     enabled: isRepliesOpened,
   });
 
-  const nestedReplies = useMemo(
-    () => (replies ? toNestedReplies(replies) : []),
+  const allReplies = useMemo(
+    () => replies?.pages.flatMap((page) => page) ?? [],
     [replies],
   );
+  const nestedReplies = useMemo(
+    () => toNestedReplies(allReplies),
+    [allReplies],
+  );
+  const hadleNextPageReplyClick = () => {
+    if (hasNextPage) {
+      fetchNextPageReply();
+    }
+  };
 
   const toggleIsEditing = () => {
     setIsEditing(!isEditing);
@@ -77,7 +95,7 @@ export default function CommentItem(props: Comment | NestedReply) {
 
   return (
     <div
-      className={`flex flex-col gap-2 ${isRootComment ? "border-b" : "ml-8"} pb-5`}
+      className={`flex flex-col gap-2 ${isRootComment ? "border-b pb-4" : "ml-8"} `}
     >
       <div className="flex items-start gap-4">
         <Link to={`/profile/${props.author_id}`}>
@@ -183,6 +201,24 @@ export default function CommentItem(props: Comment | NestedReply) {
         props.children.map((reply) => (
           <CommentItem key={reply.id} {...reply} />
         ))}
+
+      {isRootComment && hasNextPage && isRepliesOpened && (
+        <>
+          {isFetchingNextPage ? (
+            <div className="flex justify-center">
+              <LoaderCircleIcon className="text-muted-foreground animate-spin" />
+            </div>
+          ) : (
+            <div
+              className="text-muted-foreground ml-6 flex cursor-pointer items-center gap-2 text-sm font-semibold select-none"
+              onClick={hadleNextPageReplyClick}
+            >
+              <CornerDownRight className="h-4 w-4" />
+              답글 더보기
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
