@@ -18,18 +18,12 @@ export function useCreateComment(callbacks: UseMutationCallback) {
           queryKey: QUERY_KEYS.comment.root(newComment.post_id),
         });
       } else {
-        queryClient.setQueryData<Comment[]>(
-          QUERY_KEYS.comment.replies(
+        queryClient.resetQueries({
+          queryKey: QUERY_KEYS.comment.replies(
             newComment.post_id,
             newComment.root_comment_id,
           ),
-          (comments) => {
-            if (!comments)
-              throw new Error("댓글이 캐시 데이터에 보관되어있지 않습니다");
-            if (!profile) throw new Error("사용자의 프로필 데이터가 없습니다.");
-            return [...comments, { ...newComment, author: profile }];
-          },
-        );
+        });
       }
     },
     onError: (error) => {

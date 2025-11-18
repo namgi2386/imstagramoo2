@@ -4,6 +4,8 @@ import type { Comment, NestedReply } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/lib/constants";
 import CommentEditor from "@/components/comment/comment-editor";
 import {
   ChevronRight,
@@ -68,14 +70,24 @@ export default function CommentItem(props: Comment | NestedReply) {
     enabled: isRepliesOpened,
   });
 
-  const allReplies = useMemo(
-    () => replies?.pages.flatMap((page) => page) ?? [],
-    [replies],
-  );
-  const nestedReplies = useMemo(
-    () => toNestedReplies(allReplies),
-    [allReplies],
-  );
+  const queryClient = useQueryClient();
+  const nestedReplies = useMemo(() => {
+    const allReplies = (replies?.pages.flatMap((page) => page) ?? [])
+      .map((id) =>
+        queryClient.getQueryData<Comment>(QUERY_KEYS.comment.byId(id)),
+      )
+      .filter((comment): comment is Comment => comment !== undefined);
+    console.log(
+      "commentId:",
+      props.id,
+      ",pageNumber:",
+      replies?.pages.length,
+      "replies:",
+      allReplies,
+    );
+    return toNestedReplies(allReplies);
+  }, [replies, queryClient]);
+
   const hadleNextPageReplyClick = () => {
     if (hasNextPage) {
       fetchNextPageReply();

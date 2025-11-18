@@ -20,6 +20,7 @@ export const QUERY_KEYS = {
       postId,
       rootCommentId,
     ],
+    byId: (commentId: number) => ["comment", "byId", commentId],
   },
 };
 export const BUCKET_NAME = "uploads";

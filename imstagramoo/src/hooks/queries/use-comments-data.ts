@@ -1,6 +1,11 @@
 import { fetchReplyComments, fetchRootComments } from "@/api/comment";
 import { QUERY_KEYS } from "@/lib/constants";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import type { Comment } from "@/types";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export function useRootCommentsData(postId: number) {
   return useQuery({
@@ -20,6 +25,7 @@ export function useReplyCommentsData({
   rootCommentId: number;
   enabled?: boolean;
 }) {
+  const queryClient = useQueryClient();
   return useInfiniteQuery({
     queryKey: QUERY_KEYS.comment.replies(postId, rootCommentId),
     queryFn: async ({ pageParam }) => {
@@ -31,13 +37,25 @@ export function useReplyCommentsData({
         from,
         to,
       });
-      return replies
+      replies.forEach((reply) => {
+        queryClient.setQueryData(QUERY_KEYS.comment.byId(reply.id), reply);
+      });
+      return replies.map((reply) => reply.id);
     },
-    getNextPageParam: (lastPage , allPages) => {
-      if(lastPage.length < PAGE_SIZE) return undefined;
-      return allPages.length
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < PAGE_SIZE) return undefined;
+      return allPages.length;
     },
-    initialPageParam : 0,
+    initialPageParam: 0,
     enabled,
+  });
+}
+
+export function useCommentById(commentId: number) {
+  return useQuery<Comment>({
+    queryKey: QUERY_KEYS.comment.byId(commentId),
+    queryFn: () => {
+      throw new Error("Comment should be populated from cache");
+    },
   });
 }
