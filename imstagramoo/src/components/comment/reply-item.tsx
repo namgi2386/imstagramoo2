@@ -1,20 +1,18 @@
 import { Link } from "react-router";
 import defaultAvatar from "@/assets/default-profile.png";
-import type { Comment } from "@/types";
+import type { NestedReply } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
-import { ChevronRight, ChevronUp, MessageSquareText } from "lucide-react";
+import { MessageSquareText } from "lucide-react";
 import CommentItemActionbutton from "@/components/comment/comment-item-action-button";
-import ReplyList from "@/components/comment/reply-list";
 
-export default function CommentItem(props: Comment) {
+export default function ReplyItem(props: NestedReply) {
   const session = useSession();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isReply, setIsReply] = useState(false);
-  const [isRepliesOpened, setIsRepliesOpened] = useState(false);
 
   const isMine = session?.user.id === props.author.id;
 
@@ -23,19 +21,15 @@ export default function CommentItem(props: Comment) {
   };
   const toggleIsReply = () => {
     setIsReply(!isReply);
-    setIsRepliesOpened(true);
-  };
-  const toggleIsRepliesOpened = () => {
-    setIsRepliesOpened(!isRepliesOpened);
   };
 
   return (
-    <div className="flex flex-col gap-2 border-b pb-4">
+    <div className={`ml-8 flex flex-col gap-2`}>
       <div className="flex items-start gap-4">
         <Link to={`/profile/${props.author_id}`}>
           <div className="flex h-full flex-col">
             <img
-              className="h-10 w-10 rounded-full object-cover"
+              className={`h-8 w-8 rounded-full object-cover`}
               src={props.author.avatar_url || defaultAvatar}
             />
           </div>
@@ -60,7 +54,12 @@ export default function CommentItem(props: Comment) {
               onClose={toggleIsEditing}
             />
           ) : (
-            <div>{props.content}</div>
+            <div>
+              <span className="text-blue-500">
+                @{props.parentCommentAuthorNickname}
+              </span>
+              {props.content}
+            </div>
           )}
           <div className="text-muted-foreground flex justify-between text-sm">
             <div className="flex items-center gap-4">
@@ -71,26 +70,6 @@ export default function CommentItem(props: Comment) {
               <div className="bg-border h-[13px] w-0.5"></div>
               <div>{formatTimeAgo(props.created_at)}</div>
             </div>
-          </div>
-          <div>
-            {props.reply_count > 0 && (
-              <div
-                onClick={toggleIsRepliesOpened}
-                className="text-muted-foreground text-md flex cursor-pointer items-center font-semibold select-none"
-              >
-                {isRepliesOpened ? (
-                  <>
-                    <p>답글</p>
-                    <ChevronUp />
-                  </>
-                ) : (
-                  <>
-                    <p>답글 {props.reply_count}개</p>
-                    <ChevronRight />
-                  </>
-                )}
-              </div>
-            )}
           </div>
           {isReply && (
             <CommentEditor
@@ -105,9 +84,9 @@ export default function CommentItem(props: Comment) {
           )}
         </div>
       </div>
-      {isRepliesOpened && (
-        <ReplyList comment={props} isOpend={isRepliesOpened} />
-      )}
+      {props.children.map((reply) => (
+        <ReplyItem key={reply.id} {...reply} />
+      ))}
     </div>
   );
 }
