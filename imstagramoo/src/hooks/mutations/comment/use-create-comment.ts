@@ -1,14 +1,10 @@
 import { createComment } from "@/api/comment";
-import { useProfileData } from "@/hooks/queries/use-profile-data";
 import { QUERY_KEYS } from "@/lib/constants";
-import { useSession } from "@/store/session";
-import type { Comment, UseMutationCallback } from "@/types";
+import type { UseMutationCallback } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateComment(callbacks: UseMutationCallback) {
   const queryClient = useQueryClient();
-  const session = useSession();
-  const { data: profile } = useProfileData(session?.user.id);
   return useMutation({
     mutationFn: createComment,
     onSuccess: (newComment) => {

@@ -13,6 +13,11 @@ export type NestedReply = Comment & {
   parentCommentAuthorNickname?: string;
   children: NestedReply[];
 };
+export type NestedReplyId = {
+  id: number;
+  parentCommentAuthorNickname?: string;
+  children: NestedReplyId[];
+};
 
 export type UseMutationCallback = {
   onSuccess?: () => void;

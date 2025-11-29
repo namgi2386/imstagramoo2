@@ -1,20 +1,34 @@
 import { Link } from "react-router";
 import defaultAvatar from "@/assets/default-profile.png";
-import type { NestedReply } from "@/types";
+import type { NestedReplyId } from "@/types";
 import { formatTimeAgo } from "@/lib/time";
 import { useSession } from "@/store/session";
 import { useState } from "react";
 import CommentEditor from "@/components/comment/comment-editor";
 import { MessageSquareText } from "lucide-react";
 import CommentItemActionbutton from "@/components/comment/comment-item-action-button";
+import { useCommentById } from "@/hooks/queries/use-comments-data";
 
-export default function ReplyItem(props: NestedReply) {
+export default function ReplyItem({ reply }: { reply: NestedReplyId }) {
   const session = useSession();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isReply, setIsReply] = useState(false);
 
-  const isMine = session?.user.id === props.author.id;
+  const {
+    data: comment,
+    error: fetchCommentError,
+    isPending: isFetchCommentPending,
+  } = useCommentById(reply.id);
+  console.log("ReplyItem debug:", {
+    replyId: reply.id,
+    comment,
+    isFetchCommentPending,
+    fetchCommentError,
+  });
+  if (fetchCommentError) return null;
+  if (!comment) return null;
+  const isMine = session?.user.id === comment.author.id;
 
   const toggleIsEditing = () => {
     setIsEditing(!isEditing);
@@ -26,39 +40,39 @@ export default function ReplyItem(props: NestedReply) {
   return (
     <div className={`ml-8 flex flex-col gap-2`}>
       <div className="flex items-start gap-4">
-        <Link to={`/profile/${props.author_id}`}>
+        <Link to={`/profile/${comment.author_id}`}>
           <div className="flex h-full flex-col">
             <img
               className={`h-8 w-8 rounded-full object-cover`}
-              src={props.author.avatar_url || defaultAvatar}
+              src={comment.author.avatar_url || defaultAvatar}
             />
           </div>
         </Link>
         <div className="flex w-full flex-col gap-2">
           <div className="flex items-center justify-between">
-            <Link to={`/profile/${props.author_id}`}>
-              <div className="font-bold">{props.author.nickname}</div>
+            <Link to={`/profile/${comment.author_id}`}>
+              <div className="font-bold">{comment.author.nickname}</div>
             </Link>
             {isMine && (
               <CommentItemActionbutton
                 toggleIsEditing={toggleIsEditing}
-                commentId={props.id}
+                commentId={comment.id}
               />
             )}
           </div>
           {isEditing ? (
             <CommentEditor
               type={"EDIT"}
-              commetId={props.id}
-              initialContent={props.content}
+              commetId={comment.id}
+              initialContent={comment.content}
               onClose={toggleIsEditing}
             />
           ) : (
             <div>
               <span className="text-blue-500">
-                @{props.parentCommentAuthorNickname}
+                @{reply.parentCommentAuthorNickname}
               </span>
-              {props.content}
+              {comment.content}
             </div>
           )}
           <div className="text-muted-foreground flex justify-between text-sm">
@@ -68,24 +82,24 @@ export default function ReplyItem(props: NestedReply) {
                 className="hover:bg-muted h-4 w-4 cursor-pointer"
               />
               <div className="bg-border h-[13px] w-0.5"></div>
-              <div>{formatTimeAgo(props.created_at)}</div>
+              <div>{formatTimeAgo(comment.created_at)}</div>
             </div>
           </div>
           {isReply && (
             <CommentEditor
               type="REPLY"
-              postId={props.post_id}
-              parentCommentId={props.id}
-              rootCommentId={props.root_comment_id || props.id}
+              postId={comment.post_id}
+              parentCommentId={comment.id}
+              rootCommentId={comment.root_comment_id || comment.id}
               onClose={toggleIsReply}
-              depth={props.depth}
-              path={props.path}
+              depth={comment.depth}
+              path={comment.path}
             />
           )}
         </div>
       </div>
-      {props.children.map((reply) => (
-        <ReplyItem key={reply.id} {...reply} />
+      {reply.children.map((r) => (
+        <ReplyItem key={r.id} reply={r} />
       ))}
     </div>
   );

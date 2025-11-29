@@ -52,10 +52,14 @@ export function useReplyCommentsData({
 }
 
 export function useCommentById(commentId: number) {
+  const queryClient = useQueryClient();
   return useQuery<Comment>({
     queryKey: QUERY_KEYS.comment.byId(commentId),
     queryFn: () => {
       throw new Error("Comment should be populated from cache");
     },
+    initialData: () =>
+      queryClient.getQueryData<Comment>(QUERY_KEYS.comment.byId(commentId)),
+    staleTime: Infinity,
   });
 }

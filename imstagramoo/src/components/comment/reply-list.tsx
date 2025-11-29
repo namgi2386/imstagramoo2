@@ -2,28 +2,31 @@ import ReplyItem from "@/components/comment/reply-item";
 import Fallback from "@/components/fallback";
 import { useReplyCommentsData } from "@/hooks/queries/use-comments-data";
 import { QUERY_KEYS } from "@/lib/constants";
-import type { Comment, NestedReply } from "@/types";
+import type { Comment, NestedReplyId } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { CornerDownRight, Loader, LoaderCircleIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
-function toNestedReplies(replies: Comment[]): NestedReply[] {
-  const replyMap = new Map<number, NestedReply>();
+function toNestedReplies(replies: Comment[]): NestedReplyId[] {
+  const replyMap = new Map<number, NestedReplyId>();
   replies.forEach((reply) => {
-    replyMap.set(reply.id, { ...reply, children: [] });
+    replyMap.set(reply.id, { id: reply.id, children: [] });
   });
-  const result: NestedReply[] = [];
+  const result: NestedReplyId[] = [];
   replies.forEach((reply) => {
     const node = replyMap.get(reply.id)!;
     if (reply.depth === 1) {
       result.push(node);
     } else if (reply.parent_comment_id && reply.path) {
       const parentCommentId = replyMap.get(Number(reply.path.split(".").pop()));
-      const repliedCommentId = replyMap.get(reply.parent_comment_id);
+      const repliedCommentId = replies.find(
+        (r) => r.id === reply.parent_comment_id,
+      );
       if (parentCommentId && repliedCommentId) {
         parentCommentId.children.push({
-          ...node,
+          id: reply.id,
           parentCommentAuthorNickname: repliedCommentId.author.nickname,
+          children: [],
         });
       }
     }
@@ -57,14 +60,6 @@ export default function ReplyList({
         queryClient.getQueryData<Comment>(QUERY_KEYS.comment.byId(id)),
       )
       .filter((comment): comment is Comment => comment !== undefined);
-    console.log(
-      "commentId:",
-      comment.id,
-      ",pageNumber:",
-      replies?.pages.length,
-      "replies:",
-      allReplies,
-    );
     return toNestedReplies(allReplies);
   }, [replies, queryClient]);
   const hadleNextPageReplyClick = () => {
@@ -86,7 +81,9 @@ export default function ReplyList({
         </div>
       )}
       {replies &&
-        nestedReplies.map((reply) => <ReplyItem key={reply.id} {...reply} />)}
+        nestedReplies.map((reply) => (
+          <ReplyItem key={reply.id} reply={reply} />
+        ))}
       {hasNextPage && isOpend && (
         <>
           {isFetchingNextPage ? (
